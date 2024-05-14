@@ -142,6 +142,8 @@ module "ecs_task_definition" {
   awslogs_region         = "eu-north-1"
   awslogs_stream_prefix  = "ecs"
   name                   = "insurance_api_task"
+  aws_access_key_id      = var.aws_access_key_id
+  aws_secret_access_key  = var.aws_secret_access_key
 }
 
 module "iam" {
@@ -163,15 +165,21 @@ module "ecs_service" {
   force_new_deployment = true
 }
 
-module "s3_bucket" {
+module "s3_ui_bucket" {
   source        = "./modules/s3-bucket"
   bucket_name   = "insurance-ui"
   cloudfront_oai_iam_arn = module.cloudfront.oai_iam_arn
 }
 
+module "s3_img_bucket" {
+  source        = "./modules/s3-bucket"
+  bucket_name   = "insurances-img"
+  cloudfront_oai_iam_arn = module.cloudfront.oai_iam_arn
+}
+
 module "cloudfront" {
   source              = "./modules/cloudfront"
-  s3_bucket_domain_name = module.s3_bucket.bucket_domain_name
+  s3_bucket_domain_name = module.s3_ui_bucket.bucket_domain_name
   alb_dns_name        = module.alb.dns_name
   cloudfront_aliases  = ["insurance-partner.net"]
   acm_certificate_arn = var.acm_virginia_certificate_arn
